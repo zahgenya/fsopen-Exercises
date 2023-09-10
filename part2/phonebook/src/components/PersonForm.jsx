@@ -18,23 +18,20 @@ const PersonForm = ({ persons, setPersons }) => {
   const addName = (event) => {
     event.preventDefault()
     console.log("ADD NAME")
-    const isNameFound =
-    newName &&
-    persons.some(
-      (person) => person.name && person.name.toLowerCase() === newName.toLowerCase()
+    const isNameFound = newName && persons.some(
+      (person) => person.name && person.name?.toLowerCase() === newName.toLowerCase()
     )
-
+    console.log("IsNamefound:", isNameFound)
     const isNumberFound = newNumber && persons.some(
       (person) => person.number === newNumber
     )
-
+    console.log("isNumberFound:", isNumberFound)
     if (isNameFound && isNumberFound) {
       alert(`${newName} with number ${newNumber} is already added to phonebook`);
-    } else if (isNameFound) {
+    } else if (isNameFound && !isNumberFound) {
       const existingPerson = persons.find(
-        (person) => person.name.toLowerCase() === newName.toLowerCase()
+        (person) => person.name?.toLowerCase() === newName?.toLowerCase()
       );
-
       if (existingPerson) {
         if (
           confirm(
@@ -43,43 +40,45 @@ const PersonForm = ({ persons, setPersons }) => {
         ) {
           axios
             .put(`http://localhost:3001/persons/${existingPerson.id}`, {
+              name: existingPerson.name,
               number: newNumber,
             })
-            .then(response => {
-              const updatePerson = response.data;
+            .then((response) => {
+              const updatedPerson = response.data
               setPersons((prevPersons) =>
                 prevPersons.map((person) =>
-                  person.id === updatePerson.id ? updatePerson : person
+                  person.id === updatedPerson.id ? updatedPerson : person
                 )
-              );
+              )
               setNewNumber("")
               setNewName("")
             })
-            .catch(error => {
-              console.error(error)
+            .catch((error) => {
+              console.error("PUT error:", error)
             })
         }
-      } else if (isNumberFound) {
-        alert(`number ${newNumber} is already added to phonebook`)
-      } else {
-        const nameObject = {
-          name: newName,
-          number: newNumber,
-          id: persons.length + 1
-        }
-        
-        axios
-          .post("http://localhost:3001/persons", nameObject)
-          .then(response => {
-            console.log("POST response:", response.data)
-            setPersons([...persons, response.data])
-            setNewName("")
-            setNewNumber("")
-          })
-          .catch(err => console.log("POST error:", err))
       }
+    } else if (!isNameFound && !isNumberFound && newName.trim() !== "") {
+      const nameObject = {
+        name: newName,
+        number: newNumber,
+        id: persons.length + 1,
+      }
+
+      axios
+        .post("http://localhost:3001/persons", nameObject)
+        .then((response) => {
+          console.log("POST response:", response.data)
+          setPersons([...persons, response.data])
+          setNewName("")
+          setNewNumber("")
+        })
+        .catch((err) => console.log("POST error:", err))
+    } else {
+      alert("Please enter a valid name and number.")
     }
   }
+
   return (
     <form onSubmit={addName}>
       <div>
@@ -94,5 +93,4 @@ const PersonForm = ({ persons, setPersons }) => {
     </form>
   )
 }
-
 export default PersonForm
