@@ -1,7 +1,7 @@
 import { useState } from "react"
 import personService from "../services/personService"
 
-const PersonForm = ({ persons, setPersons }) => {
+const PersonForm = ({ persons, setPersons, setSuccesMessage, setErrorMessage }) => {
   const [newName, setNewName] = useState("")
   const [newNumber, setNewNumber] = useState("")
 
@@ -54,15 +54,24 @@ const PersonForm = ({ persons, setPersons }) => {
               setNewName("")
             })
             .catch((error) => {
+              setErrorMessage(
+                `Information of ${name} has already been removed from server`
+              )
+              setTimeout(() => {
+                setErrorMessage(null)
+              }, 5000)
               console.error("PUT error:", error)
             })
         }
       }
     } else if (!isNameFound && !isNumberFound && newName.trim() !== "") {
+      const lastPerson = persons[persons.length - 1]
+      const newId = lastPerson ? lastPerson.id + 1: 1
+
       const nameObject = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1,
+        id: newId,
       }
 
       personService
@@ -72,6 +81,10 @@ const PersonForm = ({ persons, setPersons }) => {
           setPersons([...persons, response.data])
           setNewName("")
           setNewNumber("")
+          setSuccesMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setSuccesMessage(null)
+          }, 5000)
         })
         .catch((err) => console.log("POST error:", err))
     } else {

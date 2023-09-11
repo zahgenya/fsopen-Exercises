@@ -1,6 +1,6 @@
 import personService from "../services/personService"
 
-const Persons = ({ filteredNames, setPersons }) => {
+const Persons = ({ filteredNames, setPersons, setErrorMessage }) => {
   const confirmDelete = (id, name) => {
     if (confirm(`Delete ${name} ?`)) {
       personService
@@ -10,6 +10,12 @@ const Persons = ({ filteredNames, setPersons }) => {
           setPersons(prevPersons => prevPersons.filter(person => person.id !== id));
         })
         .catch(error => {
+          setErrorMessage(
+            `Information of ${name} has already been removed from server`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
           console.error(error)
         })
     }
