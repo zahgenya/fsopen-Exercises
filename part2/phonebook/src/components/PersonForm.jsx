@@ -1,5 +1,5 @@
 import { useState } from "react"
-import axios from "axios"
+import personService from "../services/personService"
 
 const PersonForm = ({ persons, setPersons }) => {
   const [newName, setNewName] = useState("")
@@ -38,8 +38,8 @@ const PersonForm = ({ persons, setPersons }) => {
             `${existingPerson.name} is already added to phonebook, replace old number with a new one?`
           )
         ) {
-          axios
-            .put(`http://localhost:3001/persons/${existingPerson.id}`, {
+          personService
+            .update(existingPerson.id, {
               name: existingPerson.name,
               number: newNumber,
             })
@@ -65,8 +65,8 @@ const PersonForm = ({ persons, setPersons }) => {
         id: persons.length + 1,
       }
 
-      axios
-        .post("http://localhost:3001/persons", nameObject)
+      personService
+        .create(nameObject)
         .then((response) => {
           console.log("POST response:", response.data)
           setPersons([...persons, response.data])

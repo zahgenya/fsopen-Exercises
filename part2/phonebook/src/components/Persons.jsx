@@ -1,10 +1,10 @@
-import axios from "axios"
+import personService from "../services/personService"
 
 const Persons = ({ filteredNames, setPersons }) => {
   const confirmDelete = (id, name) => {
     if (confirm(`Delete ${name} ?`)) {
-      axios
-        .delete(`http://localhost:3001/persons/${id}`)
+      personService
+        .remove(id)
         .then(response => {
           console.log(`DELETE person with ID ${id}`)
           setPersons(prevPersons => prevPersons.filter(person => person.id !== id));
