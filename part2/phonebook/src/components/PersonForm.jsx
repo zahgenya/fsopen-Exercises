@@ -18,14 +18,21 @@ const PersonForm = ({ persons, setPersons, setSuccesMessage, setErrorMessage }) 
   const addName = (event) => {
     event.preventDefault()
     console.log("ADD NAME")
+
     const isNameFound = newName && persons.some(
       (person) => person.name && person.name?.toLowerCase() === newName.toLowerCase()
     )
     console.log("IsNamefound:", isNameFound)
+
     const isNumberFound = newNumber && persons.some(
       (person) => person.number === newNumber
     )
     console.log("isNumberFound:", isNumberFound)
+
+    const phoneRegex = /^\d{2,3}-\d+$/
+
+    const isPhoneNumberValid = phoneRegex.test(newNumber);
+
     if (isNameFound && isNumberFound) {
       alert(`${newName} with number ${newNumber} is already added to phonebook`);
     } else if (isNameFound && !isNumberFound) {
@@ -65,33 +72,38 @@ const PersonForm = ({ persons, setPersons, setSuccesMessage, setErrorMessage }) 
         }
       }
     } else if (!isNameFound && !isNumberFound && newName.trim() !== "") {
-      const lastPerson = persons[persons.length - 1]
-      const newId = lastPerson ? lastPerson.id + 1: 1
+      if (!isPhoneNumberValid) {
+        const errorMessage = "Invalid phone number format."
+        setErrorMessage(errorMessage)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      } else {
+        const lastPerson = persons[persons.length - 1]
+        const newId = lastPerson ? lastPerson.id + 1 : 1
 
-      const nameObject = {
-        name: newName,
-        number: newNumber,
-        id: newId,
+        const nameObject = {
+          name: newName,
+          number: newNumber,
+          id: newId,
+        }
+
+        personService
+          .create(nameObject)
+          .then((response) => {
+            console.log("POST response:", response.data)
+            setPersons([...persons, response.data])
+            setNewName("")
+            setNewNumber("")
+            setSuccesMessage(`Added ${newName}`)
+            setTimeout(() => {
+              setSuccesMessage(null)
+            }, 5000)
+          })
+          .catch((err) => console.log("POST error:", err))
       }
-
-      personService
-        .create(nameObject)
-        .then((response) => {
-          console.log("POST response:", response.data)
-          setPersons([...persons, response.data])
-          setNewName("")
-          setNewNumber("")
-          setSuccesMessage(`Added ${newName}`)
-          setTimeout(() => {
-            setSuccesMessage(null)
-          }, 5000)
-        })
-        .catch((err) => console.log("POST error:", err))
-    } else {
-      alert("Please enter a valid name and number.")
     }
   }
-
   return (
     <form onSubmit={addName}>
       <div>
